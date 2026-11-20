@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import ThemeRegistry from './ThemeRegistry';
 import './globals.css';
@@ -14,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
-      <body>
+    <html lang="id" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <ThemeRegistry>
           {children}
         </ThemeRegistry>

@@ -20,38 +20,68 @@ import Navbar from '../components/Navbar';
 import StatCard from '../components/StatCard';
 import StudentTable from '../components/StudentTable';
 import SettingsView from '../components/SettingsView';
-import { studentsData } from '../data/student';
+import { Student, studentsData } from '../data/student';
 
 export default function Home() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // State Lokal CRUD Siswa
+  const [students, setStudents] = useState<Student[]>(studentsData);
+
+  // 1. Create: Tambah Siswa Baru
+  const handleAddStudent = (newStudent: Omit<Student, 'id'>) => {
+    const studentWithId: Student = {
+      ...newStudent,
+      id: Date.now(),
+    };
+    setStudents((prev) => [studentWithId, ...prev]);
+  };
+
+  // 2. Update: Edit Data Siswa
+  const handleEditStudent = (updatedStudent: Student) => {
+    setStudents((prev) =>
+      prev.map((s) => (s.id === updatedStudent.id ? updatedStudent : s))
+    );
+  };
+
+  // 3. Delete: Hapus Siswa
+  const handleDeleteStudent = (id: number) => {
+    setStudents((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  // Statistik Dinamis yang Tersinkronisasi Otomatis dengan State Siswa
+  const totalStudents = students.length;
+  const maleStudents = students.filter((s) => s.jenisKelamin === 'Laki-laki').length;
+  const femaleStudents = students.filter((s) => s.jenisKelamin === 'Perempuan').length;
+  const totalClasses = new Set(students.map((s) => s.kelas)).size;
+
   const stats = [
     {
       title: 'Total Siswa',
-      value: 120,
+      value: totalStudents,
       icon: <GroupsIcon fontSize="large" />,
       color: '#2563eb',
       background: '#eff6ff',
     },
     {
       title: 'Siswa Laki-laki',
-      value: 65,
+      value: maleStudents,
       icon: <MaleIcon fontSize="large" />,
       color: '#0891b2',
       background: '#ecfeff',
     },
     {
       title: 'Siswa Perempuan',
-      value: 55,
+      value: femaleStudents,
       icon: <FemaleIcon fontSize="large" />,
       color: '#db2777',
       background: '#fdf2f8',
     },
     {
       title: 'Jumlah Kelas',
-      value: 6,
+      value: totalClasses,
       icon: <SchoolIcon fontSize="large" />,
       color: '#7c3aed',
       background: '#f5f3ff',
@@ -129,7 +159,7 @@ export default function Home() {
                 color="text.secondary"
                 sx={{ mb: 3 }}
               >
-                Ringkasan statistik data siswa tahun ajaran ini.
+                Ringkasan statistik data siswa tahun ajaran ini (tersinkronisasi realtime).
               </Typography>
 
               {/* Statistics Grid - Penerapan CSS Grid (1 kolom mobile, 2 tablet, 4 desktop) */}
@@ -174,10 +204,10 @@ export default function Home() {
               >
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-                    Manajemen Data Siswa
+                    Manajemen Data Siswa ({totalStudents} Terdaftar)
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Lihat daftar lengkap siswa, pencarian NIS, filter kelas, dan status akademik.
+                    Kelola data siswa: tambah siswa baru, edit informasi, hapus, serta filter pencarian.
                   </Typography>
                 </Box>
                 <Button
@@ -199,12 +229,15 @@ export default function Home() {
             </Box>
           )}
 
-          {/* 2. TAMPILAN DATA SISWA: Tabel Data Siswa Lengkap */}
+          {/* 2. TAMPILAN DATA SISWA: Tabel Data Siswa Lengkap dengan CRUD State Lokal */}
           {activeMenu === 'students' && (
             <Box>
               <StudentTable
-                students={studentsData}
+                students={students}
                 searchQuery={searchQuery}
+                onAddStudent={handleAddStudent}
+                onEditStudent={handleEditStudent}
+                onDeleteStudent={handleDeleteStudent}
               />
             </Box>
           )}
